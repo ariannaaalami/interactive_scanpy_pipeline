@@ -1,0 +1,9 @@
+# requirements.txt
+numpy
+pandas
+scipy
+anndata
+scanpy
+pooch
+dash>=2
+plotly>=5
