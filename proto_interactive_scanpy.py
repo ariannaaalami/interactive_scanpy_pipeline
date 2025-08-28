@@ -10,7 +10,6 @@ Dash + Scanpy UMAP app
 import numpy as np
 import pandas as pd
 import scanpy as sc
-#import scipy.sparse as sp
 import anndata as ad
 import pooch
 import scvelo as scv
