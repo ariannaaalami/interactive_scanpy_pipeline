@@ -3,7 +3,8 @@
 """
 Dash + Scanpy UMAP app
 - Press "Run Pipeline" to fetch example data, run the pipeline, and render UMAP.
-- Use the slider to choose the number of highly variable genes.
+- Drop-down menu to switch between datasets
+- Use the sliders to choose the number of highly variable genes, principal components, and nearest neighbors.
 """
 
 # ---- Imports ----
