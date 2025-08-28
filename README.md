@@ -3,6 +3,8 @@
 ## What this is
 Interactive app that allows the user to run a single-cell sequencing analysis pipeline, varying various parameters to determine how this affects downstream output. The purpose of this is for the user to gain (if not speedrun) intuition around the various aspects of an analysis pipeline.
 
+For the online version of this app (so you don't have to install it), please go [here](https://interactive-scanpy-pipeline.plotly.app/).
+
 An example of its use can be found here (gif is sped up 3x):
 
 ![Demo (gif)](assets/demo.gif)
