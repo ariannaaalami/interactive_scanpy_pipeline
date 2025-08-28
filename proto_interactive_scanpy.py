@@ -10,9 +10,10 @@ Dash + Scanpy UMAP app
 import numpy as np
 import pandas as pd
 import scanpy as sc
-import scipy.sparse as sp
+#import scipy.sparse as sp
 import anndata as ad
 import pooch
+import scvelo as scv
 
 
 from dash import Dash, html, dcc, Input, Output, State, no_update
@@ -42,6 +43,9 @@ def load_example_adata(dataset) -> ad.AnnData:
         # resetting the adata to its raw counts
         adata = adata.raw.to_adata()
         adata.obs["cell_type"] = adata.obs.index.map(lambda x: cluster_names_series[x])
+        
+    elif dataset == "DG":
+        adata = scv.datasets.dentategyrus()
         
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
@@ -105,13 +109,17 @@ def run_pipeline(dataset: str, n_hvg: int, n_pcas: int, n_neighbs: int) -> ad.An
     return adata
 
 
-def umap_figure_from_adata(adata: ad.AnnData) -> go.Figure:
+def umap_figure_from_adata(adata: ad.AnnData, dataset) -> go.Figure: ### DATASET
     """Convert adata.obsm['X_umap'] + adata.obs['leiden'] into a Plotly scatter."""
     if "X_umap" not in adata.obsm_keys():
         raise ValueError("UMAP coordinates not found.")
 
+    if dataset == "PBMC3k":
+        cell_type_index = "cell_type"
+    elif dataset == "DG":
+        cell_type_index = "clusters"
     coords = pd.DataFrame(adata.obsm["X_umap"], columns=["UMAP1", "UMAP2"], index=adata.obs_names)
-    coords["cluster"] = adata.obs["cell_type"].astype(str).values
+    coords["cluster"] = adata.obs[cell_type_index].astype(str).values
 
     fig = go.Figure()
     for cluster in sorted(coords["cluster"].unique()):
@@ -160,7 +168,8 @@ app.layout = html.Div(
                 dcc.Dropdown(
                     id="dataset-dropdown",
                     options=[
-                        {"label": "PBMC3k", "value": "PBMC3k"}
+                        {"label": "PBMC3k", "value": "PBMC3k"},
+                        {"label": "Dentate Gyrus neurogenesis", "value": "DG"}
                     ],
                     value="PBMC3k",       # default
                     clearable=False,
@@ -248,6 +257,13 @@ app.layout = html.Div(
             ),
         ),
         html.Div([
+            html.P([
+                "Dentate Gyrus neurogenesis dataset from ",
+                html.A("scVelo", href="https://scvelo.readthedocs.io/en/stable/scvelo.datasets.dentategyrus.html", target="_blank", rel="noopener noreferrer"),
+                ". PBMC3k dataset from ",
+                html.A("scanpy", href="https://scanpy.readthedocs.io/en/stable/generated/scanpy.datasets.pbmc3k.html", target="_blank", rel="noopener noreferrer"),
+                "."
+            ]),
             html.P("Tip: rerun with different HVG, PC, and KNN settings to see stability."),
             html.P("Typical ranges:"),
             html.P("HVG: 1,000–5,000 depending on tissue & depth  |  PCs: 10-100, increasing with dataset size  |  KNN: 5-15 for small datasets, but can go up to 60s for very large datasets"),
@@ -273,7 +289,7 @@ def on_run(n_clicks: int, dataset: str, n_hvg: int,  n_pcas: int, n_neighbs: int
         status = f"Running pipeline on {dataset} (n_hvg={int(n_hvg)}, PCs={int(n_pcas)}, kNN={int(n_neighbs)})…"
         # Run the analysis
         adata = run_pipeline(dataset=dataset, n_hvg=int(n_hvg), n_pcas=int(n_pcas), n_neighbs=int(n_neighbs))
-        fig = umap_figure_from_adata(adata)
+        fig = umap_figure_from_adata(adata, dataset)
         status = f"Done. Dataset: {dataset}  |  Cells: {adata.n_obs:,}  |  Genes (HVGs): {adata.n_vars:,}  |  PCs: {min(n_pcas, adata.n_vars)}  |  kNN: {n_neighbs}"
         return fig, status
     except Exception as e:
