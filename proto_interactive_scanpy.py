@@ -162,7 +162,7 @@ app.layout = html.Div(
                     options=[
                         {"label": "PBMC3k", "value": "PBMC3k"}
                     ],
-                    value="NeurIPS",       # default
+                    value="PBMC3k",       # default
                     clearable=False,
                 ),
             ],
